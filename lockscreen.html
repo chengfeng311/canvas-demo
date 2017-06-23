@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="format-detection" content="email=no" />
+		<title></title>
+		<style type="text/css">
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="myCanvas" width="400" height="400"></canvas>
+		<script src="https://cdn.staticfile.org/jquery/1.9.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
+		<script type="text/javascript">
+			(function() {
+					var	CANVASLENGTH = 400,
+						CIRCLERADIUS = 20;
+					var gap = (CANVASLENGTH - 3 * CIRCLERADIUS * 2 ) / 4,
+						r = CIRCLERADIUS,
+						d = CIRCLERADIUS * 2,
+						roadArr = [],
+						ctx;
+						
+				window.onload = function() {
+					var canvas = document.getElementById('myCanvas');
+					ctx = canvas.getContext('2d');
+						
+					init();
+				}
+				//画出九个圆
+				function init() {
+					
+					for(var i = 0; i < 3; i++) {
+						for(var j = 0; j < 3; j++) {
+							ctx.beginPath();
+							ctx.strokeStyle = '#0000ff';
+							ctx.arc(gap * (i + 1) + d * i + r, gap * (j + 1) + d * j + r, r, 0 , 2 * Math.PI);
+							ctx.stroke();
+						}
+					}
+				}
+				/*判断点击位置是否在圆内
+				 *params: x : 点击x坐标
+				 * 		  y : 点击y坐标
+				 *		  a : 校验点x坐标
+				 *		  b : 校验点y坐标
+				 * 返回值： boolean
+				 */
+				function isInCircle(x,y,a,b) {
+					if(Math.sqrt((x - a) * (x - a) + (y - b) * (y - b)) < CIRCLERADIUS) {
+						return true;
+					}else {
+						return false;
+					}
+				}
+				
+				function isInClrcles(x,y) {
+					for(var i = 0; i < 3; i++) {
+						for(var j = 0; j < 3; j++) {
+							if(isInCircle(x,y,gap * (i + 1) + d * i + r,gap * (j + 1) + d * j + r)) {
+								return {
+									x: gap * (i + 1) + d * i + r,
+									y: gap * (j + 1) + d * j + r
+								}
+							}
+						}
+					}
+					return false;
+				}
+				
+				function isInArray(point) {
+					for(var i = 0; i　< roadArr.length; i++) {
+						if(point.x == roadArr[i].x && point.y == roadArr[i].y) {
+							return true;
+						}
+					}
+					return false;
+				}
+				function eventFunc(e) {
+					var e = e || window.event;
+					var isPoint = isInClrcles(e.touches[0].clientX, e.touches[0].clientY);
+					if(isPoint && !isInArray(isPoint)) {
+						roadArr.push(isPoint);
+						ctx.beginPath();
+						ctx.strokeStyle = '#0000ff';
+						ctx.moveTo(roadArr[roadArr.length-2].x,roadArr[roadArr.length-2].y);
+						ctx.lineTo(roadArr[roadArr.length-1].x,roadArr[roadArr.length-1].y);
+						ctx.stroke();
+					}
+					
+				}
+				document.addEventListener('touchstart', function(event) {
+					var event = event || window.event;
+					var isPoint = isInClrcles(event.touches[0].clientX, event.touches[0].clientY);
+					if(isPoint) {
+						roadArr.push(isPoint);
+						document.addEventListener('touchmove',eventFunc,false );
+						
+						document.addEventListener('touchend', function() {
+							document.removeEventListener('touchmove',eventFunc,false);
+							if(roadArr.length < 4) {
+								ctx.clearRect(0,0,CANVASLENGTH,CANVASLENGTH);
+								init();
+							}
+						})
+					}
+				}, false)
+				
+			})()
+		</script>
+	</body>
+
+</html>
