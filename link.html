@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="format-detection" content="email=no" />
+		<title></title>
+		<style type="text/css">
+			html {
+				height: 100%;
+			}
+			body {
+				height: 100%;
+				margin: 0;
+				overflow: hidden;
+				background: #3162C4;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="myCanvas" width="700" height="400"></canvas>
+		<!--<script src="https://cdn.staticfile.org/jquery/1.9.1/jquery.min.js"></script>-->
+		<script type="text/javascript">
+			(function() {
+				var CTXWIDTH,
+					CTXHEIGHT,
+					LINKDISTANCE = 100,
+					ctx,
+					pointArr = [];
+				
+				window.onload = function() {
+					CTXWIDTH = document.body.clientWidth;
+					CTXHEIGHT = document.body.clientHeight;
+					var canvas = document.getElementById('myCanvas');
+					canvas.width = CTXWIDTH;
+					canvas.style.width = CTXWIDTH;
+					canvas.height = CTXHEIGHT;
+					canvas.style.height = CTXHEIGHT;
+					ctx = canvas.getContext('2d');
+					init();
+					allDrawLine();
+					var timer = setInterval(moveAllPoints,40);
+					document.onmousemove = function(e) {
+						pointArr[50] = {x: e.clientX, y: e.clientY,vx:0,vy:0};
+					}
+				}
+				
+				function movePoint(point) {
+					point.x = point.x + point.vx;
+					point.y = point.y + point.vy;
+					if(point.x > CTXWIDTH || point.x < 0 || point.y > CTXHEIGHT || point.y < 0) {
+						return false;
+					}
+					return point;
+				}
+				
+				function moveAllPoints() {
+					ctx.clearRect(0,0,CTXWIDTH,CTXHEIGHT);
+					for(var i = 0; i < pointArr.length; i++) {
+						var point = movePoint(pointArr[i]);
+						pointArr[i] = point ? point : createPoint();
+						drawPoint(pointArr[i].x,pointArr[i].y);
+					}
+					allDrawLine();
+					
+				}
+				function init() {
+					for(var i = 0; i < 50; i++) {
+						var point = createPoint();
+						drawPoint(point.x,point.y);
+						pointArr.push(point);
+					}
+				}
+				
+				function createPoint() {
+					return {
+						x: Math.ceil(Math.random() * CTXWIDTH),
+						y: Math.ceil(Math.random() * CTXHEIGHT),
+						vx: Math.random() > 0.5 ? -1 : 1,
+						vy: Math.random() > 0.5 ? -1 : 1
+					}
+				}
+				
+				function drawPoint(x,y) {
+					ctx.beginPath();
+					ctx.fillStyle = '#fff';
+					ctx.arc(x,y,1,0,2 * Math.PI,true);
+					ctx.fill();
+				}
+				
+				function isDistanceLessThan(a,b) {
+					var distance = Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+					var result = distance > LINKDISTANCE ? false : distance;
+					return result;
+				}
+				
+				function drawLine(a,b) {
+					var distance = isDistanceLessThan(a,b);
+					 if(!!distance) {
+					 	ctx.beginPath();
+					 	ctx.strokeStyle = 'rgba(255,255,255,'+ distance/LINKDISTANCE + ')';
+					 	ctx.moveTo(a.x,a.y);
+					 	ctx.lineTo(b.x,b.y);
+					 	ctx.stroke();
+					 }
+				}
+				
+				function allDrawLine() {
+					for(var i = 0; i < pointArr.length - 1; i++ ) {
+						for(var j = i + 1; j < pointArr.length; j++) {
+							if(!(pointArr[i].x - pointArr[j].x > LINKDISTANCE || pointArr[i].y - pointArr[j].y > LINKDISTANCE)){
+								drawLine(pointArr[i],pointArr[j]);
+							}
+						}
+					}
+				}
+			})()
+		</script>
+	</body>
+
+</html>
